@@ -21,7 +21,16 @@ class Config:
     NGROK_TOKEN: str = os.getenv("NGROK_TOKEN", "")
 
     # Client Settings
-    SERVER_URL: str = os.getenv("SERVER_URL", "http://localhost:8001/support")
+    SERVER_MODE: str = os.getenv("SERVER_MODE", "api")  # "api" or "local"
+    API_SERVER_URL: str = os.getenv("API_SERVER_URL", "http://localhost:8001/support")
+    LOCAL_SERVER_URL: str = os.getenv("LOCAL_SERVER_URL", "http://localhost:8001/support")
+
+    @property
+    def SERVER_URL(self) -> str:
+        """Get appropriate server URL based on mode."""
+        if self.SERVER_MODE.lower() == "api":
+            return self.API_SERVER_URL
+        return self.LOCAL_SERVER_URL
 
 
 config = Config()

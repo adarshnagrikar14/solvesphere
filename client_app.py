@@ -13,6 +13,10 @@ def main():
     print("\n" + "=" * 60)
     print("🎙️  VOICE CLIENT")
     print("=" * 60)
+    mode_indicator = "🌐 API" if config.SERVER_MODE.lower() == "api" else "🏠 LOCAL"
+    print(f"Mode: {mode_indicator}")
+    print(f"Server: {config.SERVER_URL}")
+    print("=" * 60)
     print("Press 'R' to start recording")
     print("Press 'S' to stop and send")
     print("Press 'Q' to quit")
