@@ -4,26 +4,90 @@ A voice-based customer support system powered by Ultravox AI, featuring real-tim
 
 ## 🎥 Demonstration Video
 
-**Watch the full demonstration video:**
-
-👉 **[Click here to watch the video](Debuggers_P1.mp4)** 👈
-
-Or open `video_demo.html` in your browser for an embedded player.
-
-<details>
-<summary>📹 Video Preview (Click to expand)</summary>
-
 <div align="center">
 
-![Video Thumbnail](Debuggers_P1.mp4)
+<a href="Debuggers_P1.mp4">
+  <img src="https://img.shields.io/badge/▶️-Watch%20Demo%20Video-667eea?style=for-the-badge&logo=video&logoColor=white" alt="Watch Demo Video" style="margin: 20px 0;"/>
+</a>
 
-**Video File:** `Debuggers_P1.mp4`
+<br>
 
-**To view:** Download the repository and open `Debuggers_P1.mp4` in any video player, or open `video_demo.html` in your web browser.
+<a href="Debuggers_P1.mp4" style="text-decoration: none; display: inline-block;">
+  <div style="
+    width: 100%;
+    max-width: 800px;
+    height: 450px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    margin: 20px auto;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  ">
+    <!-- Play Button Icon -->
+    <div style="
+      font-size: 80px;
+      color: white;
+      text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      margin-bottom: 20px;
+    ">▶️</div>
+    
+    <!-- Video Title -->
+    <div style="
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    ">SolveSphere AI Demonstration</div>
+    
+    <!-- Subtitle -->
+    <div style="
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    ">Click to watch the full video</div>
+    
+    <!-- HD Badge -->
+    <div style="
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 8px 15px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    ">HD VIDEO</div>
+    
+    <!-- Duration/Info Badge -->
+    <div style="
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      padding: 8px 15px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    ">📹 Full Demo</div>
+    
+  </div>
+</a>
+
+**👉 Click the video tile above to watch the demonstration!**
 
 </div>
-
-</details>
 
 ## 🚀 Features
 
