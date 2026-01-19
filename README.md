@@ -6,30 +6,11 @@ A voice-based customer support system powered by Ultravox AI, featuring real-tim
 
 <div align="center">
 
-<a href="Debuggers_P1.mp4" style="text-decoration: none; display: inline-block; position: relative;">
-  
-  <div style="position: relative; max-width: 800px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-    
-    <img src="video_thumbnail.jpg" alt="SolveSphere AI Demo Video" style="width: 100%; height: auto; display: block;" />
-    
-    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; transition: background 0.3s;">
-      <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-        <div style="width: 0; height: 0; border-left: 28px solid #667eea; border-top: 18px solid transparent; border-bottom: 18px solid transparent; margin-left: 4px;"></div>
-      </div>
-    </div>
-    
-    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 20px; color: white;">
-      <div style="font-size: 20px; font-weight: bold; margin-bottom: 5px;">SolveSphere AI - Full Demonstration</div>
-      <div style="font-size: 14px; opacity: 0.9;">Click to watch the complete video walkthrough</div>
-    </div>
-    
-  </div>
-  
-</a>
+**Click the thumbnail below to watch the demonstration video:**
 
-<br>
+[![SolveSphere AI Demonstration Video](video_thumbnail.jpg)](Debuggers_P1.mp4)
 
-**💡 Tip:** Click the video thumbnail above or open [`video_demo.html`](video_demo.html) for embedded playback
+**[▶️ Watch Video](Debuggers_P1.mp4)** | **[📺 Open Player](video_demo.html)**
 
 </div>
 
