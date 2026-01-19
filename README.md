@@ -14,6 +14,14 @@ A voice-based customer support system powered by Ultravox AI, featuring real-tim
 
 </div>
 
+## 📄 Project Documentation
+
+<div align="center">
+
+**[📥 Download Project Documentation PDF](Debuggers_P1.pdf)**
+
+</div>
+
 ## 🚀 Features
 
 - **Voice-Based Support**: Real-time voice interactions using Ultravox AI
