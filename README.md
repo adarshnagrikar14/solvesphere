@@ -2,12 +2,28 @@
 
 A voice-based customer support system powered by Ultravox AI, featuring real-time call management, escalation handling, and comprehensive analytics dashboard.
 
-## 🎥 Demonstration
+## 🎥 Demonstration Video
 
-<video width="100%" controls>
-  <source src="Debuggers_P1.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+**Watch the full demonstration video:**
+
+👉 **[Click here to watch the video](Debuggers_P1.mp4)** 👈
+
+Or open `video_demo.html` in your browser for an embedded player.
+
+<details>
+<summary>📹 Video Preview (Click to expand)</summary>
+
+<div align="center">
+
+![Video Thumbnail](Debuggers_P1.mp4)
+
+**Video File:** `Debuggers_P1.mp4`
+
+**To view:** Download the repository and open `Debuggers_P1.mp4` in any video player, or open `video_demo.html` in your web browser.
+
+</div>
+
+</details>
 
 ## 🚀 Features
 
