@@ -3,3 +3,10 @@
 venv/
 
 helpers/
+
+!README.md
+*.md
+
+*.bat
+
+quick_create_call.py

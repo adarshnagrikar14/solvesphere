@@ -105,13 +105,14 @@ async def log_webhook(call_id: str, event_type: str, payload: dict):
 
 
 async def log_tool_invocation(call_id: str, tool_name: str, parameters: dict):
-    """Log a tool invocation."""
+    """Log a tool invocation and return the inserted ID."""
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
+        cursor = await db.execute("""
             INSERT INTO tool_invocations (call_id, tool_name, parameters)
             VALUES (?, ?, ?)
         """, (call_id, tool_name, json.dumps(parameters)))
         await db.commit()
+        return cursor.lastrowid
 
 
 async def get_call(call_id: str):

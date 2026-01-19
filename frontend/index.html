@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolveSphere AI</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20"/>
+                    </svg>
+                    <span>SolveSphere AI</span>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="refreshBtn" title="Refresh data">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                    </button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle theme">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Card 1: Start New Call -->
+                <div class="card module-card">
+                    <div class="card-header">
+                        <h3>Start New Call</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="startCallForm" class="form-compact">
+                            <input type="text" id="customerId" placeholder="Customer ID (optional)">
+                            <select id="sessionType">
+                                <option value="support">Support</option>
+                                <option value="sales">Sales</option>
+                                <option value="general">General</option>
+                            </select>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="recordingEnabled" checked>
+                                <span>Enable recording</span>
+                            </label>
+                            <button type="submit" class="btn btn-primary" id="startCallBtn">Start Call</button>
+                        </form>
+
+                        <div id="callResult" class="call-result hidden">
+                            <div class="result-info">
+                                <div class="result-label">Call ID</div>
+                                <div class="result-value mono" id="resultCallId"></div>
+                            </div>
+                            <div class="result-info">
+                                <div class="result-label">Join URL</div>
+                                <div class="result-value mono small" id="resultJoinUrl"></div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" id="copyUrlBtn">Copy URL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Live Stats -->
+                <div class="card module-card">
+                    <div class="card-header">
+                        <h3>Live Statistics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalCalls">0</div>
+                                <div class="stat-label">Total Calls</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="activeCalls">0</div>
+                                <div class="stat-label">Active Now</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="escalationCount">0</div>
+                                <div class="stat-label">Escalations</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="resolutionRate">0%</div>
+                                <div class="stat-label">Resolved</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Call History -->
+                <div class="card module-card span-2">
+                    <div class="card-header">
+                        <h3>Call History</h3>
+                        <span class="badge" id="callCount">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="callHistoryContainer" class="call-list">
+                            <div class="empty-state">No calls yet</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Escalations -->
+                <div class="card module-card">
+                    <div class="card-header">
+                        <h3>Escalations</h3>
+                        <span class="badge" id="escalationBadge">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="escalationsContainer" class="escalation-list">
+                            <div class="empty-state">No escalations</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Engagement Logs -->
+                <div class="card module-card">
+                    <div class="card-header">
+                        <h3>Engagement Logs</h3>
+                        <span class="badge" id="engagementBadge">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="engagementContainer" class="engagement-list">
+                            <div class="empty-state">No engagement data</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Webhook Activity -->
+                <div class="card module-card span-2">
+                    <div class="card-header">
+                        <h3>Recent Webhook Events</h3>
+                        <span class="badge" id="webhookBadge">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="webhookContainer" class="webhook-list">
+                            <div class="empty-state">No webhook events</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Call Details Modal -->
+    <div id="callDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Call Details</h2>
+                <button class="btn-icon" id="closeModalBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="loading">Loading call details...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Call Dialog -->
+    <div id="activeCallDialog" class="call-dialog">
+        <div class="call-dialog-content">
+            <div class="call-header">
+                <div class="call-info">
+                    <h3 id="callDialogTitle">Active Call</h3>
+                    <span class="call-status" id="callDialogStatus">Connecting...</span>
+                </div>
+                <button class="btn-icon" id="closeCallDialogBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="call-body">
+                <!-- Animated Orb -->
+                <div class="call-orb-container">
+                    <div class="call-orb" id="callOrb">
+                        <div class="orb-pulse"></div>
+                        <div class="orb-inner"></div>
+                    </div>
+                    <div class="orb-status" id="orbStatus">Connecting...</div>
+                </div>
+
+                <!-- Audio Element (hidden) -->
+                <audio id="remoteAudio" autoplay></audio>
+
+                <!-- Conversation Transcript -->
+                <div class="conversation-container">
+                    <div class="conversation-header">
+                        <h4>Conversation</h4>
+                    </div>
+                    <div class="conversation-messages" id="conversationMessages">
+                        <div class="message system">Connecting to call...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="call-footer">
+                <button class="btn btn-danger" id="hangupBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    Hang Up
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
