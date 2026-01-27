@@ -329,6 +329,74 @@ document.getElementById('copyUrlBtn').addEventListener('click', () => {
     showToast('URL copied', 'success');
 });
 
+// SIP Outbound Call
+document.getElementById('makeOutboundCallBtn').addEventListener('click', async () => {
+    const phoneNumber = document.getElementById('phoneNumber').value.trim();
+
+    if (!phoneNumber) {
+        showToast('Please enter a phone number', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('makeOutboundCallBtn');
+    btn.disabled = true;
+    btn.textContent = 'Calling...';
+
+    try {
+        const payload = {
+            to_number: phoneNumber
+        };
+
+        const result = await apiRequest('/api/calls/sip/outbound', 'POST', payload);
+
+        // Show result
+        document.getElementById('sipResultCallId').textContent = result.call_id;
+        document.getElementById('sipResultToNumber').textContent = result.to_number;
+        document.getElementById('sipUriContainer').style.display = 'none';
+        document.getElementById('toNumberContainer').style.display = 'block';
+        document.getElementById('sipCallResult').classList.remove('hidden');
+
+        showToast('Outbound call initiated!', 'success');
+        await loadDashboard();
+    } catch (error) {
+        showToast(`Error: ${error.message}`, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Call User';
+    }
+});
+
+// SIP Inbound Call
+document.getElementById('createInboundCallBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('createInboundCallBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    try {
+        const result = await apiRequest('/api/calls/sip/inbound', 'POST', {});
+
+        // Show result
+        document.getElementById('sipResultCallId').textContent = result.call_id;
+        document.getElementById('sipResultUri').textContent = result.sip_uri || 'N/A';
+        document.getElementById('sipUriContainer').style.display = 'block';
+        document.getElementById('toNumberContainer').style.display = 'none';
+        document.getElementById('sipCallResult').classList.remove('hidden');
+
+        showToast('Inbound call created! Share the SIP URI.', 'success');
+        await loadDashboard();
+    } catch (error) {
+        showToast(`Error: ${error.message}`, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Get Dial-In Number';
+    }
+});
+
+// Start Chat
+document.getElementById('startChatBtn').addEventListener('click', () => {
+    window.location.href = '/static/chat.html';
+});
+
 // Refresh Button
 document.getElementById('refreshBtn').addEventListener('click', async () => {
     const btn = document.getElementById('refreshBtn');

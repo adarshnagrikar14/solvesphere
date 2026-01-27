@@ -80,7 +80,54 @@
                     </div>
                 </div>
 
-                <!-- Card 2: Live Stats -->
+                <!-- Card 2: SIP Phone Calls -->
+                <div class="card module-card">
+                    <div class="card-header">
+                        <h3>SIP Phone Calls</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-compact">
+                            <input type="tel" id="phoneNumber" placeholder="Enter phone number (e.g., +917904272100)">
+                            <button class="btn btn-primary" id="makeOutboundCallBtn">Call User</button>
+                            <button class="btn btn-secondary" id="createInboundCallBtn">Get Dial-In Number</button>
+                        </div>
+
+                        <div id="sipCallResult" class="call-result hidden">
+                            <div class="result-info">
+                                <div class="result-label">Call ID</div>
+                                <div class="result-value mono" id="sipResultCallId"></div>
+                            </div>
+                            <div class="result-info" id="sipUriContainer" style="display: none;">
+                                <div class="result-label">Dial-In URI</div>
+                                <div class="result-value mono small" id="sipResultUri"></div>
+                            </div>
+                            <div class="result-info" id="toNumberContainer" style="display: none;">
+                                <div class="result-label">Calling</div>
+                                <div class="result-value mono" id="sipResultToNumber"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Text Chat -->
+                <div class="card module-card">
+                    <div class="card-header">
+                        <h3>AI Chat Assistant</h3>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                            Have a text conversation with our AI assistant
+                        </p>
+                        <button class="btn btn-primary" id="startChatBtn" style="width: 100%;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            Start Chat
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 4: Live Stats -->
                 <div class="card module-card">
                     <div class="card-header">
                         <h3>Live Statistics</h3>

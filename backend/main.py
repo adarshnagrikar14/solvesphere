@@ -4,6 +4,10 @@ from config import (
     ULTRAVOX_API_BASE,
     HOST,
     PORT,
+    SIP_DOMAIN,
+    SIP_USERNAME,
+    SIP_PASSWORD,
+    SIP_FROM_NUMBER,
     get_webhook_url,
     validate_config
 )
@@ -117,6 +121,51 @@ class WebhookPayload(BaseModel):
     """Webhook payload from Ultravox."""
     event: str
     call: Dict[str, Any]
+
+
+class CreateSIPInboundRequest(BaseModel):
+    """Request model for creating an inbound SIP call."""
+    template_context: Optional[Dict[str, str]] = Field(default_factory=dict)
+
+
+class CreateSIPOutboundRequest(BaseModel):
+    """Request model for creating an outbound SIP call."""
+    to_number: str = Field(...,
+                           description="Phone number to call (e.g., +917904272100)")
+    template_context: Optional[Dict[str, str]] = Field(default_factory=dict)
+
+
+class CreateSIPCallResponse(BaseModel):
+    """Response model for SIP call creation."""
+    call_id: str
+    status: str
+    message: str
+    sip_uri: Optional[str] = None
+    to_number: Optional[str] = None
+
+
+class CreateChatRequest(BaseModel):
+    """Request model for creating a text chat session."""
+    metadata: Optional[Dict[str, str]] = Field(default_factory=dict)
+
+
+class SendMessageRequest(BaseModel):
+    """Request model for sending a message in chat."""
+    message: str = Field(..., description="User message text")
+
+
+class ChatMessageResponse(BaseModel):
+    """Response model for chat messages."""
+    role: str  # "user" or "agent"
+    text: str
+    timestamp: str
+
+
+class CreateChatResponse(BaseModel):
+    """Response model for chat creation."""
+    chat_id: str
+    status: str
+    message: str
 
 
 # Startup event
@@ -309,6 +358,309 @@ async def get_call_details(call_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# SIP Call Endpoints
+@app.post("/api/calls/sip/inbound", response_model=CreateSIPCallResponse)
+async def create_sip_inbound_call(request: CreateSIPInboundRequest):
+    """
+    Create an inbound SIP call where users dial in to talk to the agent.
+    Returns SIP URI that users can call.
+    """
+    logger.info("Creating inbound SIP call")
+    try:
+        payload = {
+            "medium": {
+                "sip": {
+                    "incoming": {
+                        "username": SIP_USERNAME,
+                        "password": SIP_PASSWORD
+                    }
+                }
+            }
+        }
+
+        if request.template_context:
+            payload["templateContext"] = request.template_context
+
+        headers = {
+            "X-API-Key": ULTRAVOX_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        url = f"{ULTRAVOX_API_BASE}/agents/{ULTRAVOX_AGENT_ID}/calls"
+        response = requests.post(url, json=payload, headers=headers)
+
+        if response.status_code != 201:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Ultravox API error: {response.text}"
+            )
+
+        response_data = response.json()
+        call_id = response_data.get("callId")
+
+        # Extract SIP URI from response
+        sip_uri = response_data.get("medium", {}).get("sip", {}).get("uri", "")
+
+        # Store in database
+        await create_call(
+            call_id=call_id,
+            agent_id=ULTRAVOX_AGENT_ID,
+            join_url="",
+            response_json=response_data
+        )
+
+        logger.info(f"Inbound SIP call created: {call_id}, URI: {sip_uri}")
+
+        return CreateSIPCallResponse(
+            call_id=call_id,
+            status="created",
+            message="Inbound SIP call created successfully. Users can dial the SIP URI.",
+            sip_uri=sip_uri
+        )
+
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(
+            status_code=500, detail=f"Request failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+@app.post("/api/calls/sip/outbound", response_model=CreateSIPCallResponse)
+async def create_sip_outbound_call(request: CreateSIPOutboundRequest):
+    """
+    Create an outbound SIP call to a phone number.
+    Agent calls the user at the provided number.
+    """
+    logger.info(f"Creating outbound SIP call to {request.to_number}")
+    try:
+        payload = {
+            "medium": {
+                "sip": {
+                    "outgoing": {
+                        "to": f"sip:{request.to_number}@{SIP_DOMAIN}",
+                        "from": SIP_FROM_NUMBER,
+                        "username": SIP_USERNAME,
+                        "password": SIP_PASSWORD
+                    }
+                }
+            }
+        }
+
+        if request.template_context:
+            payload["templateContext"] = request.template_context
+
+        headers = {
+            "X-API-Key": ULTRAVOX_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        url = f"{ULTRAVOX_API_BASE}/agents/{ULTRAVOX_AGENT_ID}/calls"
+        response = requests.post(url, json=payload, headers=headers)
+
+        if response.status_code != 201:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Ultravox API error: {response.text}"
+            )
+
+        response_data = response.json()
+        call_id = response_data.get("callId")
+
+        # Store in database
+        await create_call(
+            call_id=call_id,
+            agent_id=ULTRAVOX_AGENT_ID,
+            join_url="",
+            response_json=response_data
+        )
+
+        logger.info(
+            f"Outbound SIP call created: {call_id} to {request.to_number}")
+
+        return CreateSIPCallResponse(
+            call_id=call_id,
+            status="created",
+            message=f"Outbound call initiated to {request.to_number}",
+            to_number=request.to_number
+        )
+
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(
+            status_code=500, detail=f"Request failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+# Text Chat Endpoints
+@app.post("/api/chats", response_model=CreateChatResponse)
+async def create_chat_session(request: CreateChatRequest):
+    """
+    Create a new text-based chat session with the agent.
+    Uses Ultravox MESSAGE_MEDIUM_TEXT.
+    """
+    logger.info("Creating text chat session")
+    try:
+        payload = {
+            "initialOutputMedium": "MESSAGE_MEDIUM_TEXT",
+            "medium": {
+                "webRtc": {
+                    "dataMessages": {
+                        "transcript": True
+                    }
+                }
+            },
+            "metadata": request.metadata,
+            "callbacks": {
+                "joined": {"url": get_webhook_url()},
+                "ended": {"url": get_webhook_url()},
+            }
+        }
+
+        headers = {
+            "X-API-Key": ULTRAVOX_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        url = f"{ULTRAVOX_API_BASE}/agents/{ULTRAVOX_AGENT_ID}/calls"
+        response = requests.post(url, json=payload, headers=headers)
+
+        if response.status_code != 201:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Ultravox API error: {response.text}"
+            )
+
+        response_data = response.json()
+        chat_id = response_data.get("callId")
+
+        # Store in database
+        await create_call(
+            call_id=chat_id,
+            agent_id=ULTRAVOX_AGENT_ID,
+            join_url="",
+            response_json=response_data
+        )
+
+        logger.info(f"Text chat session created: {chat_id}")
+
+        return CreateChatResponse(
+            chat_id=chat_id,
+            status="created",
+            message="Chat session created successfully"
+        )
+
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(
+            status_code=500, detail=f"Request failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+@app.post("/api/chats/{chat_id}/messages")
+async def send_chat_message(chat_id: str, request: SendMessageRequest):
+    """
+    Send a message in a text chat session.
+    The agent will respond via the Ultravox text medium.
+    """
+    logger.info(f"Sending message to chat {chat_id}: {request.message}")
+    try:
+        # Verify chat exists
+        call = await get_call(chat_id)
+        if not call:
+            raise HTTPException(
+                status_code=404, detail="Chat session not found")
+
+        # Send message to Ultravox
+        headers = {
+            "X-API-Key": ULTRAVOX_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        url = f"{ULTRAVOX_API_BASE}/calls/{chat_id}/data-message"
+        payload = {
+            "type": "user_text_message",
+            "text": request.message,
+            "urgency": "soon"
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+
+        if response.status_code not in [200, 201]:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Ultravox API error: {response.text}"
+            )
+
+        response_data = response.json()
+
+        logger.info(f"Message sent successfully to chat {chat_id}")
+
+        return {
+            "success": True,
+            "message": "Message sent successfully",
+            "response": response_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+@app.get("/api/chats/{chat_id}/messages")
+async def get_chat_messages(chat_id: str):
+    """
+    Get message history for a chat session.
+    Returns all messages exchanged in the conversation.
+    """
+    logger.info(f"Fetching messages for chat {chat_id}")
+    try:
+        # Verify chat exists
+        call = await get_call(chat_id)
+        if not call:
+            raise HTTPException(
+                status_code=404, detail="Chat session not found")
+
+        # Get messages from Ultravox
+        headers = {
+            "X-API-Key": ULTRAVOX_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        url = f"{ULTRAVOX_API_BASE}/calls/{chat_id}/messages"
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Ultravox API error: {response.text}"
+            )
+
+        messages = response.json()
+
+        return {
+            "chat_id": chat_id,
+            "messages": messages
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+@app.get("/api/chats")
+async def list_chat_sessions():
+    """
+    List all text chat sessions.
+    """
+    try:
+        calls = await get_all_calls()
+        return {"chats": calls, "count": len(calls)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Webhook Endpoint
 @app.post("/api/webhook")
 async def receive_webhook(request: Request):
@@ -382,7 +734,8 @@ async def escalate_to_human(request: EscalateToHumanRequest, req: Request):
     """
     try:
         parameters = request.dict()
-        call_id = parameters.pop("call_id") or req.headers.get("X-Call-ID", "unknown")
+        call_id = parameters.pop("call_id") or req.headers.get(
+            "X-Call-ID", "unknown")
 
         # Verify call exists
         call = await get_call(call_id)
@@ -421,7 +774,8 @@ async def log_call_engagement(request: LogCallEngagementRequest, req: Request):
     """
     try:
         parameters = request.dict()
-        call_id = parameters.pop("call_id") or req.headers.get("X-Call-ID", "unknown")
+        call_id = parameters.pop("call_id") or req.headers.get(
+            "X-Call-ID", "unknown")
 
         # Verify call exists
         call = await get_call(call_id)
