@@ -44,23 +44,49 @@ function getCallIdFromUrl() {
 function formatDuration(start, end) {
     if (!start || !end) return 'N/A';
 
-    // Parse SQLite timestamps as UTC, not local
-    // SQLite stores as "YYYY-MM-DD HH:MM:SS" without timezone
-    // JavaScript interprets this as local time, causing IST offset
-    const startMs = Date.parse(start + 'Z'); // Add Z to force UTC
-    const endMs = Date.parse(end + 'Z');
+    let startDate, endDate;
 
-    const ms = endMs - startMs;
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
+    // Handle different timestamp formats
+    if (typeof start === 'string') {
+        if (start.includes(' ') && !start.includes('T') && !start.includes('Z')) {
+            startDate = new Date(start.replace(' ', 'T') + 'Z');
+        } else if (start.includes('T') && !start.includes('Z')) {
+            startDate = new Date(start + 'Z');
+        } else {
+            startDate = new Date(start);
+        }
+    } else {
+        startDate = new Date(start);
+    }
+
+    if (typeof end === 'string') {
+        if (end.includes(' ') && !end.includes('T') && !end.includes('Z')) {
+            endDate = new Date(end.replace(' ', 'T') + 'Z');
+        } else if (end.includes('T') && !end.includes('Z')) {
+            endDate = new Date(end + 'Z');
+        } else {
+            endDate = new Date(end);
+        }
+    } else {
+        endDate = new Date(end);
+    }
+
+    const ms = endDate.getTime() - startDate.getTime();
+
+    if (ms < 0 || isNaN(ms)) return 'N/A';
+
+    const totalSeconds = Math.floor(ms / 1000);
+    const seconds = totalSeconds % 60;
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const minutes = totalMinutes % 60;
+    const hours = Math.floor(totalMinutes / 60);
 
     if (hours > 0) {
-        return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+        return `${hours}h ${minutes}m`;
     } else if (minutes > 0) {
-        return `${minutes}m ${seconds % 60}s`;
+        return `${minutes}m ${seconds}s`;
     }
-    return `${seconds}s`;
+    return `${totalSeconds}s`;
 }
 
 // Format Timestamp
@@ -272,13 +298,15 @@ function openStageModal(stageId) {
                 role = 'tool';
             }
 
-            const avatarText = role === 'user' ? 'You' : role === 'agent' ? 'AI' : 'T';
+            const avatarText = role === 'user' ? 'U' : role === 'agent' ? 'AI' : 'T';
             const messageText = escapeHtml(msg.text || msg.content || 'No text');
 
             return `
                 <div class="chat-message ${role}">
                     <div class="chat-avatar">${avatarText}</div>
-                    <div class="chat-bubble">${messageText}</div>
+                    <div class="chat-bubble">
+                        <div class="message-content">${messageText}</div>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -291,11 +319,14 @@ function openStageModal(stageId) {
         }
 
         messagesHtml = `
-            <div class="chat-message tool">
-                <div class="chat-avatar">T</div>
-                <div class="chat-bubble">
-                    <div class="tool-label">Tool: ${stage.toolData.tool_name}</div>
-                    <pre style="margin: 0; white-space: pre-wrap;">${JSON.stringify(params, null, 2)}</pre>
+            <div class="tool-call-container">
+                <div class="tool-call-header">
+                    <div class="tool-icon">T</div>
+                    <div class="tool-name">${escapeHtml(stage.toolData.tool_name)}</div>
+                </div>
+                <div class="tool-call-body">
+                    <div class="json-label">Parameters</div>
+                    <pre class="json-display">${JSON.stringify(params, null, 2)}</pre>
                 </div>
             </div>
         `;
@@ -383,9 +414,21 @@ async function renderCallJourney(callId) {
                 <div class="journey-title">
                     <h1>Call Journey</h1>
                     <div class="journey-meta">
-                        <div>Time: ${formatTimestamp(call.created_at)}</div>
-                        <div>ID: ${call.call_id.substring(0, 12)}...</div>
-                        <div><span class="status-badge ${call.status}">${call.status}</span></div>
+                        <div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            ${formatTimestamp(call.created_at)}
+                        </div>
+                        <div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            ${escapeHtml(call.call_id.substring(0, 12))}...
+                        </div>
+                        <div><span class="status-badge ${call.status}">${escapeHtml(call.status.toUpperCase())}</span></div>
                     </div>
                 </div>
             </div>
@@ -409,17 +452,34 @@ async function renderCallJourney(callId) {
                 </div>
             </div>
 
-            ${call.short_summary ? `
-                <div class="summary-section">
-                    <h2>Summary</h2>
-                    <div class="summary-text">${call.short_summary}</div>
+            ${call.recording_enabled && call.ended_at ? `
+                <div class="recording-section">
+                    <div class="recording-info">
+                        <div class="recording-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="recording-text">
+                            <h3>Call Recording Available</h3>
+                            <p>Full audio recording of this conversation</p>
+                        </div>
+                    </div>
+                    <button class="recording-btn" onclick="openRecordingModal('${callId}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>
+                        </svg>
+                        Play Recording
+                    </button>
                 </div>
             ` : ''}
 
-            ${call.recording_enabled && call.ended_at ? `
-                <button class="recording-btn" onclick="openRecordingModal('${callId}')">
-                    Play Call Recording
-                </button>
+            ${call.short_summary ? `
+                <div class="summary-section">
+                    <h2>Call Summary</h2>
+                    <div class="summary-text">${escapeHtml(call.short_summary)}</div>
+                </div>
             ` : ''}
 
             <div class="flow-section">

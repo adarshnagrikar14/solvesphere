@@ -44,181 +44,214 @@
 
         <!-- Main Content -->
         <main class="main">
-            <!-- Dashboard Grid -->
-            <div class="dashboard-grid">
-                <!-- Card 1: Start New Call -->
-                <div class="card module-card">
-                    <div class="card-header">
-                        <h3>Start New Call</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="startCallForm" class="form-compact">
-                            <input type="text" id="customerId" placeholder="Customer ID (optional)">
-                            <select id="sessionType">
-                                <option value="support">Support</option>
-                                <option value="sales">Sales</option>
-                                <option value="general">General</option>
-                            </select>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="recordingEnabled" checked>
-                                <span>Enable recording</span>
-                            </label>
-                            <button type="submit" class="btn btn-primary" id="startCallBtn">Start Call</button>
-                        </form>
-
-                        <div id="callResult" class="call-result hidden">
-                            <div class="result-info">
-                                <div class="result-label">Call ID</div>
-                                <div class="result-value mono" id="resultCallId"></div>
-                            </div>
-                            <div class="result-info">
-                                <div class="result-label">Join URL</div>
-                                <div class="result-value mono small" id="resultJoinUrl"></div>
-                            </div>
-                            <button class="btn btn-secondary btn-sm" id="copyUrlBtn">Copy URL</button>
-                        </div>
-                    </div>
+            <!-- Section 1: Quick Actions -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Quick Actions</h2>
                 </div>
-
-                <!-- Card 2: SIP Phone Calls -->
-                <div class="card module-card">
-                    <div class="card-header">
-                        <h3>SIP Phone Calls</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-compact">
-                            <input type="tel" id="phoneNumber" placeholder="Enter phone number (e.g., +917904272100)">
-                            <button class="btn btn-primary" id="makeOutboundCallBtn">Call User</button>
-                            <button class="btn btn-secondary" id="createInboundCallBtn">Get Dial-In Number</button>
+                <div class="section-grid section-grid-3">
+                    <!-- Card: Start New Call -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>Start New Call</h3>
                         </div>
+                        <div class="card-body">
+                            <form id="startCallForm" class="form-compact">
+                                <input type="text" id="customerId" placeholder="Customer ID (optional)">
+                                <select id="sessionType">
+                                    <option value="support">Support</option>
+                                    <option value="sales">Sales</option>
+                                    <option value="general">General</option>
+                                </select>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="recordingEnabled" checked>
+                                    <span>Enable recording</span>
+                                </label>
+                                <button type="submit" class="btn btn-primary" id="startCallBtn">Start Call</button>
+                            </form>
 
-                        <div id="sipCallResult" class="call-result hidden">
-                            <div class="result-info">
-                                <div class="result-label">Call ID</div>
-                                <div class="result-value mono" id="sipResultCallId"></div>
-                            </div>
-                            <div class="result-info" id="sipUriContainer" style="display: none;">
-                                <div class="result-label">Dial-In URI</div>
-                                <div class="result-value mono small" id="sipResultUri"></div>
-                            </div>
-                            <div class="result-info" id="toNumberContainer" style="display: none;">
-                                <div class="result-label">Calling</div>
-                                <div class="result-value mono" id="sipResultToNumber"></div>
+                            <div id="callResult" class="call-result hidden">
+                                <div class="result-info">
+                                    <div class="result-label">Call ID</div>
+                                    <div class="result-value mono" id="resultCallId"></div>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-label">Join URL</div>
+                                    <div class="result-value mono small" id="resultJoinUrl"></div>
+                                </div>
+                                <button class="btn btn-secondary btn-sm" id="copyUrlBtn">Copy URL</button>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Card 3: Text Chat -->
-                <div class="card module-card">
-                    <div class="card-header">
-                        <h3>AI Chat Assistant</h3>
-                    </div>
-                    <div class="card-body">
-                        <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
-                            Have a text conversation with our AI assistant
-                        </p>
-                        <button class="btn btn-primary" id="startChatBtn" style="width: 100%;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                            </svg>
-                            Start Chat
-                        </button>
-                    </div>
-                </div>
+                    <!-- Card: SIP Phone Calls -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>SIP Phone Calls</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-compact">
+                                <input type="tel" id="phoneNumber" placeholder="Enter phone number (e.g., +917904272100)">
+                                <button class="btn btn-primary" id="makeOutboundCallBtn">Call User</button>
+                                <button class="btn btn-secondary" id="createInboundCallBtn">Get Dial-In Number</button>
+                            </div>
 
-                <!-- Card 4: Live Stats -->
-                <div class="card module-card">
-                    <div class="card-header">
-                        <h3>Live Statistics</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-value" id="totalCalls">0</div>
-                                <div class="stat-label">Total Calls</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="activeCalls">0</div>
-                                <div class="stat-label">Active Now</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="escalationCount">0</div>
-                                <div class="stat-label">Escalations</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="resolutionRate">0%</div>
-                                <div class="stat-label">Resolved</div>
+                            <div id="sipCallResult" class="call-result hidden">
+                                <div class="result-info">
+                                    <div class="result-label">Call ID</div>
+                                    <div class="result-value mono" id="sipResultCallId"></div>
+                                </div>
+                                <div class="result-info" id="sipUriContainer" style="display: none;">
+                                    <div class="result-label">Dial-In URI</div>
+                                    <div class="result-value mono small" id="sipResultUri"></div>
+                                </div>
+                                <div class="result-info" id="toNumberContainer" style="display: none;">
+                                    <div class="result-label">Calling</div>
+                                    <div class="result-value mono" id="sipResultToNumber"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Card 3: Call History -->
-                <div class="card module-card span-2">
-                    <div class="card-header">
-                        <h3>Call History</h3>
-                        <span class="badge" id="callCount">0</span>
-                    </div>
-                    <div class="card-body">
-                        <div id="callHistoryContainer" class="call-list">
-                            <div class="empty-state">No calls yet</div>
+                    <!-- Card: AI Chat Assistant -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>AI Chat Assistant</h3>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                                Have a text conversation with our AI assistant
+                            </p>
+                            <button class="btn btn-primary" id="startChatBtn" style="width: 100%;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                Start Chat
+                            </button>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Card 4: Escalations -->
-                <div class="card module-card">
-                    <div class="card-header">
-                        <h3>Escalations</h3>
-                        <span class="badge" id="escalationBadge">0</span>
-                    </div>
-                    <div class="card-body">
-                        <div id="escalationsContainer" class="escalation-list">
-                            <div class="empty-state">No escalations</div>
+            <!-- Section 2: Live Overview -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Live Overview</h2>
+                </div>
+                <div class="section-grid section-grid-1">
+                    <div class="card module-card">
+                        <div class="card-body">
+                            <div class="stats-grid stats-grid-horizontal">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="totalCalls">0</div>
+                                    <div class="stat-label">Total Calls</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="activeCalls">0</div>
+                                    <div class="stat-label">Active Now</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="escalationCount">0</div>
+                                    <div class="stat-label">Escalations</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="resolutionRate">0%</div>
+                                    <div class="stat-label">Resolved</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Card 5: Engagement Logs -->
-                <div class="card module-card">
-                    <div class="card-header">
-                        <h3>Engagement Logs</h3>
-                        <span class="badge" id="engagementBadge">0</span>
+            <!-- Section 3: Call Records -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Call Records</h2>
+                </div>
+                <div class="section-grid section-grid-2">
+                    <!-- Card: Call History -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>Call History</h3>
+                            <span class="badge" id="callCount">0</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="callHistoryContainer" class="call-list">
+                                <div class="empty-state">No calls yet</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div id="engagementContainer" class="engagement-list">
-                            <div class="empty-state">No engagement data</div>
+
+                    <!-- Card: Call Journey -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>Call Journey</h3>
+                            <span class="badge" id="journeyCallCount">0</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="callJourneyContainer" class="call-journey-list">
+                                <div class="empty-state">No calls yet</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Card 7: Call Journey -->
-                <div class="card module-card span-2">
-                    <div class="card-header">
-                        <h3>Call Journey</h3>
-                        <span class="badge" id="journeyCallCount">0</span>
+            <!-- Section 4: Customer Intelligence -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Customer Intelligence</h2>
+                </div>
+                <div class="section-grid section-grid-2">
+                    <!-- Card: Escalations -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>Escalations</h3>
+                            <span class="badge" id="escalationBadge">0</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="escalationsContainer" class="escalation-list">
+                                <div class="empty-state">No escalations</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div id="callJourneyContainer" class="call-journey-list">
-                            <div class="empty-state">No calls yet</div>
+
+                    <!-- Card: Engagement Logs -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>Engagement Logs</h3>
+                            <span class="badge" id="engagementBadge">0</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="engagementContainer" class="engagement-list">
+                                <div class="empty-state">No engagement data</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Card 8: Webhook Activity -->
-                <div class="card module-card span-2">
-                    <div class="card-header">
-                        <h3>Recent Webhook Events</h3>
-                        <span class="badge" id="webhookBadge">0</span>
-                    </div>
-                    <div class="card-body">
-                        <div id="webhookContainer" class="webhook-list">
-                            <div class="empty-state">No webhook events</div>
+            <!-- Section 5: System Activity -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">System Activity</h2>
+                </div>
+                <div class="section-grid section-grid-1">
+                    <!-- Card: Webhook Activity -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3>Recent Webhook Events</h3>
+                            <span class="badge" id="webhookBadge">0</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="webhookContainer" class="webhook-list">
+                                <div class="empty-state">No webhook events</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </main>
     </div>
 
