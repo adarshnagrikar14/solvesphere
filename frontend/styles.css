@@ -303,6 +303,7 @@ body {
 
 /* Lists */
 .call-list,
+.call-journey-list,
 .escalation-list,
 .engagement-list,
 .webhook-list {

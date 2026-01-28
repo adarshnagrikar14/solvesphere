@@ -41,6 +41,7 @@ async function loadDashboard() {
         const calls = await apiRequest('/api/calls');
         updateStats(calls.calls);
         updateCallHistory(calls.calls);
+        updateCallJourney(calls.calls);
         await loadEscalationsAndEngagement(calls.calls);
         await loadWebhooks();
     } catch (error) {
@@ -278,6 +279,46 @@ function updateWebhooks(webhooks) {
             </div>
         </div>
     `).join('');
+}
+
+// Update Call Journey
+function updateCallJourney(calls) {
+    const container = document.getElementById('callJourneyContainer');
+    document.getElementById('journeyCallCount').textContent = calls.length;
+
+    if (calls.length === 0) {
+        container.innerHTML = '<div class="empty-state">No calls yet</div>';
+        return;
+    }
+
+    // Show most recent 10 calls
+    container.innerHTML = calls.slice(0, 10).map(call => {
+        const created = new Date(call.created_at).toLocaleString();
+        const duration = call.ended_at
+            ? calculateDuration(call.created_at, call.ended_at)
+            : 'Ongoing';
+
+        return `
+            <div class="call-item clickable" data-call-id="${call.call_id}" onclick="viewCallJourney('${call.call_id}')">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">${call.short_summary || 'Call Session'}</div>
+                        <div class="item-meta">${created} • ${duration}</div>
+                    </div>
+                    <span class="status-badge ${call.status}">${call.status}</span>
+                </div>
+                <div class="item-footer">
+                    <span>📞 ${call.call_id.substring(0, 12)}...</span>
+                    ${call.end_reason ? `<span>End: ${call.end_reason}</span>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// View Call Journey
+function viewCallJourney(callId) {
+    window.location.href = `/static/call-detail.html?id=${callId}`;
 }
 
 // Ultravox SDK connection state
@@ -946,6 +987,9 @@ document.getElementById('closeCallDialogBtn').addEventListener('click', () => {
     }
     closeCallDialog();
 });
+
+// Make functions available globally for onclick handlers
+window.viewCallJourney = viewCallJourney;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {

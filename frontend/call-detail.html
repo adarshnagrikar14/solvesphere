@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Journey - SolveSphere AI</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body {
+            background: var(--color-bg);
+        }
+
+        .app {
+            background: var(--color-bg);
+            min-height: 100vh;
+        }
+
+        .main {
+            background: var(--color-bg);
+        }
+
+        .journey-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--color-bg);
+        }
+
+        .journey-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .journey-title h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .journey-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Flow Container */
+        .flow-section {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .flow-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-subtitle {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+            font-size: 0.9375rem;
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            position: relative;
+            padding: 3rem 1rem;
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+
+        .flow-track {
+            display: flex;
+            gap: 8rem;
+            align-items: center;
+            min-width: min-content;
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        /* SVG Arrows */
+        .flow-arrows {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .arrow-line {
+            stroke: var(--color-border);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawArrow 0.8s ease-out forwards;
+            marker-end: url(#arrowhead);
+        }
+
+        @keyframes drawArrow {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Flow Nodes */
+        .flow-node {
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            animation: nodeSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        @keyframes nodeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flow-node:nth-child(1) { animation-delay: 0.1s; }
+        .flow-node:nth-child(2) { animation-delay: 0.2s; }
+        .flow-node:nth-child(3) { animation-delay: 0.3s; }
+        .flow-node:nth-child(4) { animation-delay: 0.4s; }
+        .flow-node:nth-child(5) { animation-delay: 0.5s; }
+        .flow-node:nth-child(6) { animation-delay: 0.6s; }
+        .flow-node:nth-child(7) { animation-delay: 0.7s; }
+        .flow-node:nth-child(8) { animation-delay: 0.8s; }
+
+        .node-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--color-card);
+            border: 3px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin: 0 auto 1rem;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .flow-node:hover .node-circle {
+            transform: scale(1.1);
+            border-color: var(--color-accent);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .node-circle.type-system {
+            border-color: #64748b;
+            color: #64748b;
+        }
+
+        .node-circle.type-user {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .node-circle.type-agent {
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+        }
+
+        .node-circle.type-tool {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .node-content {
+            text-align: center;
+            max-width: 200px;
+        }
+
+        .node-title {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .node-subtitle {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .node-time {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            font-family: monospace;
+        }
+
+        .node-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: var(--color-text-secondary);
+        }
+
+        /* Stage Details Modal */
+        .stage-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stage-modal.active {
+            display: flex;
+        }
+
+        .stage-modal-content {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 1rem;
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stage-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .stage-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .stage-modal-recording {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-bg-secondary);
+        }
+
+        .stage-modal-recording-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stage-modal-recording audio {
+            width: 100%;
+        }
+
+        .stage-modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Chat-style message bubbles */
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 75%;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .chat-message.agent {
+            align-self: flex-start;
+        }
+
+        .chat-message.tool {
+            align-self: flex-start;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .chat-message.user .chat-avatar {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .chat-message.agent .chat-avatar {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .chat-message.tool .chat-avatar {
+            background: #10b981;
+            color: white;
+        }
+
+        .chat-bubble {
+            padding: 1rem 1.25rem;
+            border-radius: 1rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .chat-message.user .chat-bubble {
+            background: #3b82f6;
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .chat-message.agent .chat-bubble {
+            background: #8b5cf6;
+            color: white;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .chat-message.tool .chat-bubble {
+            background: #10b981;
+            color: white;
+            font-family: monospace;
+            font-size: 0.875rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .tool-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Stage Modal Scrollbar */
+        .stage-modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .stage-modal-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .stage-modal-body::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+
+        .stage-modal-body::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent);
+        }
+
+        /* Recording Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .modal-body audio {
+            width: 100%;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: var(--color-text-primary);
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .summary-text {
+            color: var(--color-text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Recording Button */
+        .recording-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 2rem;
+        }
+
+        .recording-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            background: var(--color-bg-secondary);
+            color: var(--color-accent);
+        }
+
+        /* Loading */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 1.5rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        .flow-diagram::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .flow-diagram::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .flow-diagram::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+
+        .flow-diagram::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20"/>
+                    </svg>
+                    <span>SolveSphere AI</span>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Toggle theme">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="journey-container">
+                <a href="/" class="back-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Dashboard
+                </a>
+
+                <div class="loading-container" id="loadingSpinner">
+                    <div class="spinner"></div>
+                    <div style="font-weight: 600; color: var(--color-text-secondary);">Loading Call Journey...</div>
+                </div>
+
+                <div id="journeyContent" style="display: none;">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Recording Modal -->
+    <div class="modal" id="recordingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Call Recording</h2>
+                <button class="close-modal" onclick="closeRecordingModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <audio controls id="recordingAudio" style="width: 100%;">
+                    <source id="recordingSource" type="audio/wav">
+                    Your browser does not support audio playback.
+                </audio>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stage Details Modal -->
+    <div class="stage-modal" id="stageModal" onclick="closeStageModal(event)">
+        <div class="stage-modal-content" onclick="event.stopPropagation()">
+            <div class="stage-modal-header">
+                <div class="stage-modal-title" id="stageModalTitle">Stage Details</div>
+                <button class="close-modal" onclick="closeStageModal()">×</button>
+            </div>
+            <div id="stageModalRecording" style="display: none;"></div>
+            <div class="stage-modal-body">
+                <div class="chat-messages" id="stageModalMessages"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="/static/call-detail.js"></script>
+</body>
+</html>

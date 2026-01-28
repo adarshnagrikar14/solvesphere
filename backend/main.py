@@ -358,6 +358,72 @@ async def get_call_details(call_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/calls/{call_id}/messages")
+async def get_call_messages(call_id: str):
+    """Get all messages from a call."""
+    try:
+        call = await get_call(call_id)
+        if not call:
+            raise HTTPException(status_code=404, detail="Call not found")
+
+        # Try to fetch from Ultravox API
+        headers = {
+            "X-API-Key": ULTRAVOX_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        url = f"{ULTRAVOX_API_BASE}/calls/{call_id}/messages"
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            data = response.json()
+            return {"messages": data.get("results", [])}
+        else:
+            return {"messages": []}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching messages: {str(e)}")
+        return {"messages": []}
+
+
+@app.get("/api/calls/{call_id}/recording")
+async def get_call_recording(call_id: str):
+    """Get call recording audio file."""
+    try:
+        call = await get_call(call_id)
+        if not call:
+            raise HTTPException(status_code=404, detail="Call not found")
+
+        # Fetch from Ultravox API
+        headers = {
+            "X-API-Key": ULTRAVOX_API_KEY
+        }
+
+        url = f"{ULTRAVOX_API_BASE}/calls/{call_id}/recording"
+        response = requests.get(url, headers=headers, stream=True)
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=404, detail="Recording not found")
+
+        # Stream the audio file
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(
+            response.iter_content(chunk_size=8192),
+            media_type="audio/wav",
+            headers={
+                "Content-Disposition": f"inline; filename=recording-{call_id}.wav"
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching recording: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # SIP Call Endpoints
 @app.post("/api/calls/sip/inbound", response_model=CreateSIPCallResponse)
 async def create_sip_inbound_call(request: CreateSIPInboundRequest):
