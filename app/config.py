@@ -23,7 +23,9 @@ class Config:
     # Client Settings
     SERVER_MODE: str = os.getenv("SERVER_MODE", "api")  # "api" or "local"
     API_SERVER_URL: str = os.getenv("API_SERVER_URL", "http://localhost:8001/support")
-    LOCAL_SERVER_URL: str = os.getenv("LOCAL_SERVER_URL", "http://localhost:8001/support")
+    LOCAL_SERVER_URL: str = os.getenv(
+        "LOCAL_SERVER_URL", "http://localhost:8001/support"
+    )
 
     @property
     def SERVER_URL(self) -> str:

@@ -9,7 +9,7 @@ from config import (
     SIP_PASSWORD,
     SIP_FROM_NUMBER,
     get_webhook_url,
-    validate_config
+    validate_config,
 )
 from database import (
     init_db,
@@ -20,7 +20,7 @@ from database import (
     get_call,
     get_all_calls,
     get_call_webhooks,
-    get_call_tool_invocations
+    get_call_tool_invocations,
 )
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,8 +36,7 @@ import logging
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -45,7 +44,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Ultravox Integration API",
     description="Backend API for Ultravox voice agent integration",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # CORS middleware
@@ -65,13 +64,15 @@ async def log_requests(request: Request, call_next):
     logger.info(f">>> {request.method} {request.url.path}")
     response = await call_next(request)
     logger.info(
-        f"<<< {request.method} {request.url.path} - Status: {response.status_code}")
+        f"<<< {request.method} {request.url.path} - Status: {response.status_code}"
+    )
     return response
 
 
 # Pydantic Models
 class CreateCallRequest(BaseModel):
     """Request model for creating a new call."""
+
     metadata: Optional[Dict[str, str]] = Field(default_factory=dict)
     recording_enabled: bool = Field(default=True)
     first_speaker_prompt: Optional[str] = Field(
@@ -81,6 +82,7 @@ class CreateCallRequest(BaseModel):
 
 class CreateCallResponse(BaseModel):
     """Response model for call creation."""
+
     call_id: str
     join_url: str
     agent_id: str
@@ -90,6 +92,7 @@ class CreateCallResponse(BaseModel):
 
 class EscalateToHumanRequest(BaseModel):
     """Request model for escalate_to_human tool."""
+
     call_id: Optional[str] = None  # Make optional - get from header
     escalation_reason: str
     priority_level: str  # low, medium, high, critical
@@ -99,6 +102,7 @@ class EscalateToHumanRequest(BaseModel):
 
 class LogCallEngagementRequest(BaseModel):
     """Request model for log_call_engagement tool."""
+
     call_id: Optional[str] = None  # Make optional - get from header
     # initial_contact, understanding_issue, providing_solution, closing_conversation
     call_phase: str
@@ -110,6 +114,7 @@ class LogCallEngagementRequest(BaseModel):
 
 class ToolResponse(BaseModel):
     """Generic response for tool invocations."""
+
     success: bool
     message: str
     tool_name: str
@@ -119,24 +124,29 @@ class ToolResponse(BaseModel):
 
 class WebhookPayload(BaseModel):
     """Webhook payload from Ultravox."""
+
     event: str
     call: Dict[str, Any]
 
 
 class CreateSIPInboundRequest(BaseModel):
     """Request model for creating an inbound SIP call."""
+
     template_context: Optional[Dict[str, str]] = Field(default_factory=dict)
 
 
 class CreateSIPOutboundRequest(BaseModel):
     """Request model for creating an outbound SIP call."""
-    to_number: str = Field(...,
-                           description="Phone number to call (e.g., +917904272100)")
+
+    to_number: str = Field(
+        ..., description="Phone number to call (e.g., +917904272100)"
+    )
     template_context: Optional[Dict[str, str]] = Field(default_factory=dict)
 
 
 class CreateSIPCallResponse(BaseModel):
     """Response model for SIP call creation."""
+
     call_id: str
     status: str
     message: str
@@ -146,16 +156,19 @@ class CreateSIPCallResponse(BaseModel):
 
 class CreateChatRequest(BaseModel):
     """Request model for creating a text chat session."""
+
     metadata: Optional[Dict[str, str]] = Field(default_factory=dict)
 
 
 class SendMessageRequest(BaseModel):
     """Request model for sending a message in chat."""
+
     message: str = Field(..., description="User message text")
 
 
 class ChatMessageResponse(BaseModel):
     """Response model for chat messages."""
+
     role: str  # "user" or "agent"
     text: str
     timestamp: str
@@ -163,6 +176,7 @@ class ChatMessageResponse(BaseModel):
 
 class CreateChatResponse(BaseModel):
     """Response model for chat creation."""
+
     chat_id: str
     status: str
     message: str
@@ -180,19 +194,20 @@ async def startup_event():
         frontend_path = Path(__file__).parent.parent / "frontend"
         if frontend_path.exists():
             app.mount(
-                "/static", StaticFiles(directory=str(frontend_path)), name="static")
+                "/static", StaticFiles(directory=str(frontend_path)), name="static"
+            )
             logger.info(f"✓ Static files mounted from: {frontend_path}")
 
-        logger.info("="*60)
+        logger.info("=" * 60)
         logger.info(f"Server starting on http://{HOST}:{PORT}")
         logger.info(f"Dashboard: http://{HOST}:{PORT}/")
         logger.info(f"API Docs: http://{HOST}:{PORT}/docs")
-        logger.info("="*60)
+        logger.info("=" * 60)
 
         # Log registered routes
         logger.info("Registered routes:")
         for route in app.routes:
-            if hasattr(route, 'path'):
+            if hasattr(route, "path"):
                 logger.info(f"  {route.path}")
     except Exception as e:
         logger.error(f"Startup error: {e}")
@@ -214,15 +229,15 @@ async def serve_frontend(request: Request):
 
     if frontend_file.exists():
         logger.info("Serving index.html")
-        with open(frontend_file, 'r', encoding='utf-8') as f:
+        with open(frontend_file, "r", encoding="utf-8") as f:
             html_content = f.read()
         return HTMLResponse(
             content=html_content,
             headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
                 "Pragma": "no-cache",
-                "Expires": "0"
-            }
+                "Expires": "0",
+            },
         )
 
     logger.error("Frontend file not found!")
@@ -236,6 +251,7 @@ async def serve_frontend(request: Request):
     </html>
     """.format(frontend_file))
 
+
 # Test endpoint
 
 
@@ -244,6 +260,7 @@ async def test_route():
     """Test that routes are working."""
     logger.info("TEST ROUTE HIT!")
     return {"message": "Routes are working!", "path": "/test"}
+
 
 # Health check endpoint
 
@@ -255,7 +272,7 @@ async def health():
     return {
         "status": "running",
         "service": "Ultravox Integration API",
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
 
 
@@ -273,22 +290,15 @@ async def create_ultravox_call(request: CreateCallRequest):
             "medium": {"webRtc": {}},
             "recordingEnabled": request.recording_enabled,
             "metadata": request.metadata,
-            "firstSpeakerSettings": {
-                "agent": {
-                    "prompt": request.first_speaker_prompt
-                }
-            },
+            "firstSpeakerSettings": {"agent": {"prompt": request.first_speaker_prompt}},
             "callbacks": {
                 "joined": {"url": get_webhook_url()},
                 "ended": {"url": get_webhook_url()},
-            }
+            },
         }
 
         # Make request to Ultravox API
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY,
-            "Content-Type": "application/json"
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY, "Content-Type": "application/json"}
 
         url = f"{ULTRAVOX_API_BASE}/agents/{ULTRAVOX_AGENT_ID}/calls"
         response = requests.post(url, json=payload, headers=headers)
@@ -296,7 +306,7 @@ async def create_ultravox_call(request: CreateCallRequest):
         if response.status_code != 201:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Ultravox API error: {response.text}"
+                detail=f"Ultravox API error: {response.text}",
             )
 
         response_data = response.json()
@@ -308,7 +318,7 @@ async def create_ultravox_call(request: CreateCallRequest):
             call_id=call_id,
             agent_id=ULTRAVOX_AGENT_ID,
             join_url=join_url,
-            response_json=response_data
+            response_json=response_data,
         )
 
         return CreateCallResponse(
@@ -316,12 +326,11 @@ async def create_ultravox_call(request: CreateCallRequest):
             join_url=join_url,
             agent_id=ULTRAVOX_AGENT_ID,
             status="created",
-            message="Call created successfully"
+            message="Call created successfully",
         )
 
     except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=500, detail=f"Request failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
@@ -350,7 +359,7 @@ async def get_call_details(call_id: str):
         return {
             "call": call,
             "webhooks": webhooks,
-            "tool_invocations": tool_invocations
+            "tool_invocations": tool_invocations,
         }
     except HTTPException:
         raise
@@ -367,10 +376,7 @@ async def get_call_messages(call_id: str):
             raise HTTPException(status_code=404, detail="Call not found")
 
         # Try to fetch from Ultravox API
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY,
-            "Content-Type": "application/json"
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY, "Content-Type": "application/json"}
 
         url = f"{ULTRAVOX_API_BASE}/calls/{call_id}/messages"
         response = requests.get(url, headers=headers)
@@ -397,9 +403,7 @@ async def get_call_recording(call_id: str):
             raise HTTPException(status_code=404, detail="Call not found")
 
         # Fetch from Ultravox API
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY}
 
         url = f"{ULTRAVOX_API_BASE}/calls/{call_id}/recording"
         response = requests.get(url, headers=headers, stream=True)
@@ -409,12 +413,13 @@ async def get_call_recording(call_id: str):
 
         # Stream the audio file
         from fastapi.responses import StreamingResponse
+
         return StreamingResponse(
             response.iter_content(chunk_size=8192),
             media_type="audio/wav",
             headers={
                 "Content-Disposition": f"inline; filename=recording-{call_id}.wav"
-            }
+            },
         )
 
     except HTTPException:
@@ -436,10 +441,7 @@ async def create_sip_inbound_call(request: CreateSIPInboundRequest):
         payload = {
             "medium": {
                 "sip": {
-                    "incoming": {
-                        "username": SIP_USERNAME,
-                        "password": SIP_PASSWORD
-                    }
+                    "incoming": {"username": SIP_USERNAME, "password": SIP_PASSWORD}
                 }
             }
         }
@@ -447,10 +449,7 @@ async def create_sip_inbound_call(request: CreateSIPInboundRequest):
         if request.template_context:
             payload["templateContext"] = request.template_context
 
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY,
-            "Content-Type": "application/json"
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY, "Content-Type": "application/json"}
 
         url = f"{ULTRAVOX_API_BASE}/agents/{ULTRAVOX_AGENT_ID}/calls"
         response = requests.post(url, json=payload, headers=headers)
@@ -458,7 +457,7 @@ async def create_sip_inbound_call(request: CreateSIPInboundRequest):
         if response.status_code != 201:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Ultravox API error: {response.text}"
+                detail=f"Ultravox API error: {response.text}",
             )
 
         response_data = response.json()
@@ -472,7 +471,7 @@ async def create_sip_inbound_call(request: CreateSIPInboundRequest):
             call_id=call_id,
             agent_id=ULTRAVOX_AGENT_ID,
             join_url="",
-            response_json=response_data
+            response_json=response_data,
         )
 
         logger.info(f"Inbound SIP call created: {call_id}, URI: {sip_uri}")
@@ -481,12 +480,11 @@ async def create_sip_inbound_call(request: CreateSIPInboundRequest):
             call_id=call_id,
             status="created",
             message="Inbound SIP call created successfully. Users can dial the SIP URI.",
-            sip_uri=sip_uri
+            sip_uri=sip_uri,
         )
 
     except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=500, detail=f"Request failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
@@ -506,7 +504,7 @@ async def create_sip_outbound_call(request: CreateSIPOutboundRequest):
                         "to": f"sip:{request.to_number}@{SIP_DOMAIN}",
                         "from": SIP_FROM_NUMBER,
                         "username": SIP_USERNAME,
-                        "password": SIP_PASSWORD
+                        "password": SIP_PASSWORD,
                     }
                 }
             }
@@ -515,10 +513,7 @@ async def create_sip_outbound_call(request: CreateSIPOutboundRequest):
         if request.template_context:
             payload["templateContext"] = request.template_context
 
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY,
-            "Content-Type": "application/json"
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY, "Content-Type": "application/json"}
 
         url = f"{ULTRAVOX_API_BASE}/agents/{ULTRAVOX_AGENT_ID}/calls"
         response = requests.post(url, json=payload, headers=headers)
@@ -526,7 +521,7 @@ async def create_sip_outbound_call(request: CreateSIPOutboundRequest):
         if response.status_code != 201:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Ultravox API error: {response.text}"
+                detail=f"Ultravox API error: {response.text}",
             )
 
         response_data = response.json()
@@ -537,22 +532,20 @@ async def create_sip_outbound_call(request: CreateSIPOutboundRequest):
             call_id=call_id,
             agent_id=ULTRAVOX_AGENT_ID,
             join_url="",
-            response_json=response_data
+            response_json=response_data,
         )
 
-        logger.info(
-            f"Outbound SIP call created: {call_id} to {request.to_number}")
+        logger.info(f"Outbound SIP call created: {call_id} to {request.to_number}")
 
         return CreateSIPCallResponse(
             call_id=call_id,
             status="created",
             message=f"Outbound call initiated to {request.to_number}",
-            to_number=request.to_number
+            to_number=request.to_number,
         )
 
     except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=500, detail=f"Request failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
@@ -568,24 +561,15 @@ async def create_chat_session(request: CreateChatRequest):
     try:
         payload = {
             "initialOutputMedium": "MESSAGE_MEDIUM_TEXT",
-            "medium": {
-                "webRtc": {
-                    "dataMessages": {
-                        "transcript": True
-                    }
-                }
-            },
+            "medium": {"webRtc": {"dataMessages": {"transcript": True}}},
             "metadata": request.metadata,
             "callbacks": {
                 "joined": {"url": get_webhook_url()},
                 "ended": {"url": get_webhook_url()},
-            }
+            },
         }
 
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY,
-            "Content-Type": "application/json"
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY, "Content-Type": "application/json"}
 
         url = f"{ULTRAVOX_API_BASE}/agents/{ULTRAVOX_AGENT_ID}/calls"
         response = requests.post(url, json=payload, headers=headers)
@@ -593,7 +577,7 @@ async def create_chat_session(request: CreateChatRequest):
         if response.status_code != 201:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Ultravox API error: {response.text}"
+                detail=f"Ultravox API error: {response.text}",
             )
 
         response_data = response.json()
@@ -604,7 +588,7 @@ async def create_chat_session(request: CreateChatRequest):
             call_id=chat_id,
             agent_id=ULTRAVOX_AGENT_ID,
             join_url="",
-            response_json=response_data
+            response_json=response_data,
         )
 
         logger.info(f"Text chat session created: {chat_id}")
@@ -612,12 +596,11 @@ async def create_chat_session(request: CreateChatRequest):
         return CreateChatResponse(
             chat_id=chat_id,
             status="created",
-            message="Chat session created successfully"
+            message="Chat session created successfully",
         )
 
     except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=500, detail=f"Request failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
@@ -633,20 +616,16 @@ async def send_chat_message(chat_id: str, request: SendMessageRequest):
         # Verify chat exists
         call = await get_call(chat_id)
         if not call:
-            raise HTTPException(
-                status_code=404, detail="Chat session not found")
+            raise HTTPException(status_code=404, detail="Chat session not found")
 
         # Send message to Ultravox
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY,
-            "Content-Type": "application/json"
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY, "Content-Type": "application/json"}
 
         url = f"{ULTRAVOX_API_BASE}/calls/{chat_id}/data-message"
         payload = {
             "type": "user_text_message",
             "text": request.message,
-            "urgency": "soon"
+            "urgency": "soon",
         }
 
         response = requests.post(url, json=payload, headers=headers)
@@ -654,7 +633,7 @@ async def send_chat_message(chat_id: str, request: SendMessageRequest):
         if response.status_code not in [200, 201]:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Ultravox API error: {response.text}"
+                detail=f"Ultravox API error: {response.text}",
             )
 
         response_data = response.json()
@@ -664,7 +643,7 @@ async def send_chat_message(chat_id: str, request: SendMessageRequest):
         return {
             "success": True,
             "message": "Message sent successfully",
-            "response": response_data
+            "response": response_data,
         }
 
     except HTTPException:
@@ -684,14 +663,10 @@ async def get_chat_messages(chat_id: str):
         # Verify chat exists
         call = await get_call(chat_id)
         if not call:
-            raise HTTPException(
-                status_code=404, detail="Chat session not found")
+            raise HTTPException(status_code=404, detail="Chat session not found")
 
         # Get messages from Ultravox
-        headers = {
-            "X-API-Key": ULTRAVOX_API_KEY,
-            "Content-Type": "application/json"
-        }
+        headers = {"X-API-Key": ULTRAVOX_API_KEY, "Content-Type": "application/json"}
 
         url = f"{ULTRAVOX_API_BASE}/calls/{chat_id}/messages"
         response = requests.get(url, headers=headers)
@@ -699,15 +674,12 @@ async def get_chat_messages(chat_id: str):
         if response.status_code != 200:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Ultravox API error: {response.text}"
+                detail=f"Ultravox API error: {response.text}",
             )
 
         messages = response.json()
 
-        return {
-            "chat_id": chat_id,
-            "messages": messages
-        }
+        return {"chat_id": chat_id, "messages": messages}
 
     except HTTPException:
         raise
@@ -742,8 +714,7 @@ async def receive_webhook(request: Request):
         call_id = call_data.get("callId")
 
         if not call_id:
-            raise HTTPException(
-                status_code=400, detail="Invalid webhook payload")
+            raise HTTPException(status_code=400, detail="Invalid webhook payload")
 
         # Log webhook to database
         await log_webhook(call_id=call_id, event_type=event_type, payload=payload)
@@ -758,7 +729,7 @@ async def receive_webhook(request: Request):
                 call_id=call_id,
                 agent_id=agent_id,
                 join_url=join_url,
-                response_json=call_data
+                response_json=call_data,
             )
             logger.info(f"Created call {call_id} from webhook")
 
@@ -779,7 +750,7 @@ async def receive_webhook(request: Request):
                 ended_at=ended_at,
                 end_reason=end_reason,
                 short_summary=short_summary,
-                summary=summary
+                summary=summary,
             )
 
         logger.info(f"Webhook received: {event_type} for call {call_id}")
@@ -800,8 +771,7 @@ async def escalate_to_human(request: EscalateToHumanRequest, req: Request):
     """
     try:
         parameters = request.dict()
-        call_id = parameters.pop("call_id") or req.headers.get(
-            "X-Call-ID", "unknown")
+        call_id = parameters.pop("call_id") or req.headers.get("X-Call-ID", "unknown")
 
         # Verify call exists
         call = await get_call(call_id)
@@ -810,20 +780,19 @@ async def escalate_to_human(request: EscalateToHumanRequest, req: Request):
 
         # Log tool invocation and get the inserted ID
         invocation_id = await log_tool_invocation(
-            call_id=call_id,
-            tool_name="escalate_to_human",
-            parameters=parameters
+            call_id=call_id, tool_name="escalate_to_human", parameters=parameters
         )
 
         logger.info(
-            f"Escalation requested for call {call_id}: {parameters['escalation_reason']}")
+            f"Escalation requested for call {call_id}: {parameters['escalation_reason']}"
+        )
 
         return ToolResponse(
             success=True,
             message="Escalation logged successfully",
             tool_name="escalate_to_human",
             call_id=call_id,
-            invocation_id=invocation_id
+            invocation_id=invocation_id,
         )
 
     except HTTPException:
@@ -840,8 +809,7 @@ async def log_call_engagement(request: LogCallEngagementRequest, req: Request):
     """
     try:
         parameters = request.dict()
-        call_id = parameters.pop("call_id") or req.headers.get(
-            "X-Call-ID", "unknown")
+        call_id = parameters.pop("call_id") or req.headers.get("X-Call-ID", "unknown")
 
         # Verify call exists
         call = await get_call(call_id)
@@ -850,20 +818,17 @@ async def log_call_engagement(request: LogCallEngagementRequest, req: Request):
 
         # Log tool invocation and get the inserted ID
         invocation_id = await log_tool_invocation(
-            call_id=call_id,
-            tool_name="log_call_engagement",
-            parameters=parameters
+            call_id=call_id, tool_name="log_call_engagement", parameters=parameters
         )
 
-        logger.info(
-            f"Engagement logged for call {call_id}: {parameters['call_phase']}")
+        logger.info(f"Engagement logged for call {call_id}: {parameters['call_phase']}")
 
         return ToolResponse(
             success=True,
             message="Engagement metrics logged successfully",
             tool_name="log_call_engagement",
             call_id=call_id,
-            invocation_id=invocation_id
+            invocation_id=invocation_id,
         )
 
     except HTTPException:

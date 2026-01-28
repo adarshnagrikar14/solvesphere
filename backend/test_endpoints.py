@@ -9,6 +9,7 @@ import time
 
 BASE_URL = "http://localhost:8000"
 
+
 def print_response(response, title):
     """Pretty print API response."""
     print(f"\n{'='*60}")
@@ -21,12 +22,14 @@ def print_response(response, title):
         print(f"Response: {response.text}")
     print()
 
+
 def test_health_check():
     """Test the health check endpoint."""
     print("\n\n🏥 Testing Health Check...")
     response = requests.get(f"{BASE_URL}/")
     print_response(response, "Health Check")
     return response.status_code == 200
+
 
 def test_create_call():
     """Test creating a new Ultravox call."""
@@ -35,10 +38,10 @@ def test_create_call():
         "metadata": {
             "customer_id": "TEST123",
             "session_type": "support",
-            "test": "true"
+            "test": "true",
         },
         "recording_enabled": True,
-        "first_speaker_prompt": "(New Call) Respond as if you are answering the phone."
+        "first_speaker_prompt": "(New Call) Respond as if you are answering the phone.",
     }
 
     response = requests.post(f"{BASE_URL}/api/calls", json=payload)
@@ -48,11 +51,13 @@ def test_create_call():
         return response.json().get("call_id")
     return None
 
+
 def test_list_calls():
     """Test listing all calls."""
     print("\n\n📋 Testing List Calls...")
     response = requests.get(f"{BASE_URL}/api/calls")
     print_response(response, "List All Calls")
+
 
 def test_get_call(call_id):
     """Test getting a specific call."""
@@ -63,6 +68,7 @@ def test_get_call(call_id):
     print(f"\n\n🔍 Testing Get Call Details for {call_id}...")
     response = requests.get(f"{BASE_URL}/api/calls/{call_id}")
     print_response(response, f"Get Call Details: {call_id}")
+
 
 def test_escalate_to_human(call_id):
     """Test the escalate_to_human tool endpoint."""
@@ -76,11 +82,12 @@ def test_escalate_to_human(call_id):
         "escalation_reason": "Customer needs advanced technical support - test escalation",
         "priority_level": "high",
         "context_summary": "Test call - customer laptop won't boot after software update",
-        "customer_sentiment": "frustrated"
+        "customer_sentiment": "frustrated",
     }
 
     response = requests.post(f"{BASE_URL}/api/tools/escalate_to_human", json=payload)
     print_response(response, "Escalate to Human")
+
 
 def test_log_engagement(call_id):
     """Test the log_call_engagement tool endpoint."""
@@ -95,11 +102,12 @@ def test_log_engagement(call_id):
         "customer_sentiment": "satisfied",
         "resolution_likelihood": 85,
         "issue_resolved": True,
-        "engagement_notes": "Test call - successfully logged engagement metrics"
+        "engagement_notes": "Test call - successfully logged engagement metrics",
     }
 
     response = requests.post(f"{BASE_URL}/api/tools/log_call_engagement", json=payload)
     print_response(response, "Log Call Engagement")
+
 
 def test_webhook_simulation(call_id):
     """Simulate a webhook event (for testing purposes)."""
@@ -117,18 +125,19 @@ def test_webhook_simulation(call_id):
             "endReason": "hangup",
             "shortSummary": "Test call ended successfully",
             "summary": "This is a test webhook simulation. The call was created for testing purposes and ended normally.",
-            "ended": "2026-01-19T15:00:00Z"
-        }
+            "ended": "2026-01-19T15:00:00Z",
+        },
     }
 
     response = requests.post(f"{BASE_URL}/api/webhook", json=payload)
     print_response(response, "Webhook (Simulated)")
 
+
 def main():
     """Run all tests."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🚀 Starting Ultravox Backend API Tests")
-    print("="*60)
+    print("=" * 60)
 
     # Test health check
     if not test_health_check():
@@ -155,20 +164,23 @@ def main():
         # Get call details to see all the data
         test_get_call(call_id)
     else:
-        print("\n❌ Failed to create call. Check your Ultravox API configuration in .env")
+        print(
+            "\n❌ Failed to create call. Check your Ultravox API configuration in .env"
+        )
         print("   Make sure ULTRAVOX_API_KEY and ULTRAVOX_AGENT_ID are set correctly.")
 
     # List all calls
     test_list_calls()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🎉 Tests Complete!")
-    print("="*60)
+    print("=" * 60)
     print("\nNext steps:")
     print("  1. Check the database: backend/ultravox.db")
     print("  2. Visit the API docs: http://localhost:8000/docs")
     print("  3. Use the Swagger UI to test endpoints interactively")
-    print("="*60)
+    print("=" * 60)
+
 
 if __name__ == "__main__":
     main()

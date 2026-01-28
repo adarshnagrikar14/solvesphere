@@ -1,4 +1,5 @@
 """Client entry point."""
+
 import time
 import keyboard
 from datetime import datetime
@@ -31,7 +32,9 @@ def main():
             if keyboard.is_pressed("s"):
                 if recorder.recording:
                     recorder.stop_recording()
-                    filename = f"recording_{datetime.now().strftime('%Y%m%d_%H%M%S')}.wav"
+                    filename = (
+                        f"recording_{datetime.now().strftime('%Y%m%d_%H%M%S')}.wav"
+                    )
                     recorder.save_audio(filename)
                     recorder.send_to_api(filename)
                     print("\nReady for next recording. Press 'R' to record again.\n")
